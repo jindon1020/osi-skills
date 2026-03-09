@@ -20,6 +20,7 @@
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --border: #2e2e3a;
+            --success: #22c55e;
         }
 
         body {
@@ -94,7 +95,7 @@
 
         .skills-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 1.5rem;
         }
 
@@ -104,19 +105,23 @@
             border-radius: 12px;
             padding: 1.5rem;
             transition: all 0.3s ease;
-            cursor: pointer;
         }
 
         .skill-card:hover {
-            transform: translateY(-4px);
             border-color: var(--accent);
             box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+        }
+
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
         }
 
         .skill-name {
             font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
             color: var(--text-primary);
         }
 
@@ -127,11 +132,11 @@
             line-height: 1.5;
         }
 
-        .skill-meta {
+        .skill-tags {
             display: flex;
-            gap: 1rem;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .skill-tag {
@@ -141,8 +146,45 @@
             color: var(--accent);
             border-radius: 20px;
             font-size: 0.75rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
+        }
+
+        .install-box {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .install-cmd {
+            flex: 1;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .copy-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
         }
 
         .no-results {
@@ -160,12 +202,26 @@
             font-size: 0.9rem;
         }
 
-        .install-cmd {
+        .footer-install {
             background: var(--bg-secondary);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .footer-cmd {
             font-family: monospace;
             color: var(--accent);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
         }
 
         @keyframes fadeIn {
@@ -175,6 +231,26 @@
 
         .skill-card {
             animation: fadeIn 0.3s ease forwards;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
         }
     </style>
 </head>
@@ -195,16 +271,22 @@
 
         <footer>
             <p>一键安装所有 Skills:</p>
-            <p style="margin-top: 0.5rem;">
-                <span class="install-cmd">curl -sL https://jindon1020.github.io/osi-skills/install.sh | bash</span>
-            </p>
+            <div class="footer-install">
+                <span class="footer-cmd" id="fullInstallCmd">curl -sL https://jindon1020.github.io/osi-skills/install.sh | bash</span>
+            </div>
             <p style="margin-top: 1rem;">
-                <a href="https://github.com/jindon1020/osi-skills" target="_blank" style="color: var(--accent); text-decoration: none;">GitHub 仓库</a>
+                <a href="https://github.com/jindon1020/osi-skills" target="_blank">GitHub 仓库</a>
             </p>
         </footer>
     </div>
 
+    <div class="toast" id="toast">已复制到剪贴板!</div>
+
     <script>
+        const BASE_URL = 'https://jindon1020.github.io/osi-skills';
+        const FULL_INSTALL_CMD = `curl -sL ${BASE_URL}/install.sh | bash`;
+        const SINGLE_INSTALL_CMD = `curl -sL ${BASE_URL}/install-single.sh | bash -s`;
+
         const skills = [
             {
                 name: "algorithmic-art",
@@ -298,7 +380,7 @@
             },
             {
                 name: "theme-factory",
-                desc: "为幻灯片、文档、报告、HTML 页面等穿件物设置主题",
+                desc: "为幻灯片、文档、报告、HTML 页面等设置主题",
                 tags: ["主题", "样式", "设计"]
             },
             {
@@ -323,6 +405,28 @@
             }
         ];
 
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function copyToClipboard(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = '已复制!';
+                btn.classList.add('copied');
+                showToast('已复制到剪贴板!');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                showToast('复制失败，请手动复制');
+            });
+        }
+
         function renderSkills(filter = '') {
             const grid = document.getElementById('skillsGrid');
             const stats = document.getElementById('stats');
@@ -342,15 +446,23 @@
                 return;
             }
 
-            grid.innerHTML = filtered.map((skill, index) => `
+            grid.innerHTML = filtered.map((skill, index) => {
+                const installCmd = `${SINGLE_INSTALL_CMD} ${skill.name}`;
+                return `
                 <div class="skill-card" style="animation-delay: ${index * 0.05}s">
-                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-header">
+                        <div class="skill-name">${skill.name}</div>
+                    </div>
                     <div class="skill-desc">${skill.desc}</div>
-                    <div class="skill-meta">
+                    <div class="skill-tags">
                         ${skill.tags.map(tag => `<span class="skill-tag">${tag}</span>`).join('')}
                     </div>
+                    <div class="install-box">
+                        <span class="install-cmd">${installCmd}</span>
+                        <button class="copy-btn" onclick="copyToClipboard('${installCmd}', this)">复制</button>
+                    </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // 初始化
