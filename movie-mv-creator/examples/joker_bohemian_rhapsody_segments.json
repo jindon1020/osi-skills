@@ -1,0 +1,230 @@
+[
+  {
+    "song_start": 0.0, "song_end": 4.0,
+    "movie_start": 38, "movie_end": 46,
+    "desc": "Opening fade from dark",
+    "fade_in": true, "fade_out": false
+  },
+  {
+    "song_start": 4.0, "song_end": 8.5,
+    "movie_start": 92, "movie_end": 101,
+    "desc": "Is this the real life - Arthur in mirror",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 8.5, "song_end": 15.0,
+    "movie_start": 210, "movie_end": 223,
+    "desc": "Caught in a landslide - with social worker",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 15.0, "song_end": 25.0,
+    "movie_start": 280, "movie_end": 300,
+    "desc": "Open your eyes - Arthur close-up despair",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 25.0, "song_end": 31.0,
+    "movie_start": 575, "movie_end": 587,
+    "desc": "Poor boy - climbing stairs wearily",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 31.0, "song_end": 38.0,
+    "movie_start": 4180, "movie_end": 4194,
+    "desc": "No sympathy - alone on graffiti bus",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 38.0, "song_end": 43.0,
+    "movie_start": 2665, "movie_end": 2675,
+    "desc": "Little high - Sophie smiling",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 43.0, "song_end": 49.0,
+    "movie_start": 1772, "movie_end": 1784,
+    "desc": "Little low - clown on subway",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 49.0, "song_end": 58.0,
+    "movie_start": 1920, "movie_end": 1938,
+    "desc": "Mama just killed a man - subway confrontation",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 58.0, "song_end": 66.0,
+    "movie_start": 2065, "movie_end": 2081,
+    "desc": "Put a gun against his head - bathroom slow dance",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 66.0, "song_end": 75.0,
+    "movie_start": 5340, "movie_end": 5358,
+    "desc": "Life had just begun - Arthur covered in aftermath",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 75.0, "song_end": 85.0,
+    "movie_start": 2373, "movie_end": 2393,
+    "desc": "Mama ooh - mother watching TV",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 85.0, "song_end": 95.0,
+    "movie_start": 3573, "movie_end": 3593,
+    "desc": "Not back this time tomorrow - hospital bedside",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 95.0, "song_end": 105.0,
+    "movie_start": 4455, "movie_end": 4475,
+    "desc": "Carry on carry on - Arthur anguished close-up",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 105.0, "song_end": 112.0,
+    "movie_start": 2993, "movie_end": 3007,
+    "desc": "Too late - Arthur alone at home",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 112.0, "song_end": 120.0,
+    "movie_start": 1035, "movie_end": 1051,
+    "desc": "Shivers down spine - workplace scene",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 120.0, "song_end": 130.0,
+    "movie_start": 4783, "movie_end": 4803,
+    "desc": "Body aching - Arthur collapsed/despairing",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 130.0, "song_end": 140.0,
+    "movie_start": 5062, "movie_end": 5082,
+    "desc": "Goodbye - Arthur dancing ecstatically in light",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 140.0, "song_end": 150.0,
+    "movie_start": 3283, "movie_end": 3303,
+    "desc": "Leave you all behind - gate/barrier at Wayne manor",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 150.0, "song_end": 157.0,
+    "movie_start": 3882, "movie_end": 3896,
+    "desc": "Don't want to die - red uniform in mirror",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 157.0, "song_end": 165.0,
+    "movie_start": 5253, "movie_end": 5269,
+    "desc": "Guitar solo pt1 - bathroom transformation dance",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 165.0, "song_end": 175.0,
+    "movie_start": 5672, "movie_end": 5692,
+    "desc": "Guitar solo pt2 - Joker full makeup walks subway",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 175.0, "song_end": 183.0,
+    "movie_start": 5553, "movie_end": 5569,
+    "desc": "Guitar solo pt3 - clown mask followers on street",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 183.0, "song_end": 192.0,
+    "movie_start": 5873, "movie_end": 5891,
+    "desc": "Silhouetto - backstage silhouettes colorful curtain",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 192.0, "song_end": 200.0,
+    "movie_start": 5922, "movie_end": 5938,
+    "desc": "Scaramouche - talk show stage entrance",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 200.0, "song_end": 210.0,
+    "movie_start": 5975, "movie_end": 5995,
+    "desc": "Galileo - Joker on Murray Franklin show",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 210.0, "song_end": 220.0,
+    "movie_start": 6145, "movie_end": 6165,
+    "desc": "Bismillah - Murray confrontation",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 220.0, "song_end": 230.0,
+    "movie_start": 6210, "movie_end": 6230,
+    "desc": "Let me go! - talk show climax",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 230.0, "song_end": 240.0,
+    "movie_start": 6305, "movie_end": 6325,
+    "desc": "Devil aside - Joker sinister smile",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 240.0, "song_end": 247.0,
+    "movie_start": 6375, "movie_end": 6389,
+    "desc": "For me! - chaos erupts",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 247.0, "song_end": 255.0,
+    "movie_start": 6453, "movie_end": 6469,
+    "desc": "Stone me - Gotham riots fire",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 255.0, "song_end": 263.0,
+    "movie_start": 6508, "movie_end": 6524,
+    "desc": "Leave me to die - police car",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 263.0, "song_end": 275.0,
+    "movie_start": 6545, "movie_end": 6569,
+    "desc": "Can't do this - pulled from wreckage, crowd",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 275.0, "song_end": 284.0,
+    "movie_start": 6625, "movie_end": 6643,
+    "desc": "Get out of here - Joker face against night sky",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 284.0, "song_end": 300.0,
+    "movie_start": 6700, "movie_end": 6732,
+    "desc": "Nothing matters - Joker on car hood, crowd worships",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 300.0, "song_end": 315.0,
+    "movie_start": 6732, "movie_end": 6762,
+    "desc": "Nothing matters to me - blood smile painting",
+    "fade_in": false, "fade_out": false
+  },
+  {
+    "song_start": 315.0, "song_end": 340.0,
+    "movie_start": 6843, "movie_end": 6893,
+    "desc": "Any way the wind blows - Arkham asylum",
+    "fade_in": false, "fade_out": true
+  },
+  {
+    "song_start": 340.0, "song_end": 358.0,
+    "movie_start": 6920, "movie_end": 6956,
+    "desc": "Final - Arkham hallway bloody footprints",
+    "fade_in": false, "fade_out": true
+  }
+]
