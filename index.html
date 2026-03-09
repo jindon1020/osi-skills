@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSI Skills - Agent Skills 展示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #2e2e3a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .search-box {
+            margin: 2rem auto;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .stats {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .skill-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+        }
+
+        .skill-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .skill-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .skill-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .skill-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .install-cmd {
+            background: var(--bg-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            color: var(--accent);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .skill-card {
+            animation: fadeIn 0.3s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OSI Skills</h1>
+            <p class="subtitle">自定义 Claude Code Agent Skills 集合</p>
+
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索 skills... (支持名称和描述)">
+            </div>
+
+            <div class="stats" id="stats"></div>
+        </header>
+
+        <div class="skills-grid" id="skillsGrid"></div>
+
+        <footer>
+            <p>一键安装所有 Skills:</p>
+            <p style="margin-top: 0.5rem;">
+                <span class="install-cmd">curl -sL https://jindon1020.github.io/osi-skills/install.sh | bash</span>
+            </p>
+            <p style="margin-top: 1rem;">
+                <a href="https://github.com/jindon1020/osi-skills" target="_blank" style="color: var(--accent); text-decoration: none;">GitHub 仓库</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const skills = [
+            {
+                name: "algorithmic-art",
+                desc: "使用 p5.js 创建算法艺术，支持 seeded 随机和交互式参数探索",
+                tags: ["艺术", "生成艺术", "p5.js"]
+            },
+            {
+                name: "brand-guidelines",
+                desc: "应用 Anthropic 官方品牌颜色和 typography",
+                tags: ["品牌", "设计", "Anthropic"]
+            },
+            {
+                name: "canvas-design",
+                desc: "使用设计理念创建漂亮的视觉艺术，输出 PNG 和 PDF",
+                tags: ["设计", "艺术", "Canvas"]
+            },
+            {
+                name: "doc-coauthoring",
+                desc: "指导用户进行结构化的文档协作工作流",
+                tags: ["文档", "协作", "写作"]
+            },
+            {
+                name: "docx",
+                desc: "全面的 Word 文档创建、编辑和分析，支持修订、评论、格式保存",
+                tags: ["Word", "文档", "Office"]
+            },
+            {
+                name: "feishu-doc-reader",
+                desc: "读取和提取飞书云文档内容，支持纯文本、富文本、表格、图片",
+                tags: ["飞书", "文档", "中国"]
+            },
+            {
+                name: "frontend-design",
+                desc: "创建独特、生产级的前端界面，高设计质量",
+                tags: ["前端", "UI", "React"]
+            },
+            {
+                name: "internal-comms",
+                desc: "编写各类内部通讯的资源和格式",
+                tags: ["内部通讯", "公司", "文档"]
+            },
+            {
+                name: "last30days",
+                desc: "追踪最近 30 天的活动，处理 Reddit 和 X 数据",
+                tags: ["数据", "追踪", "社交媒体"]
+            },
+            {
+                name: "mac-desktop-use",
+                desc: "通过截图识别、鼠标移动/点击和键盘输入控制 macOS 桌面应用",
+                tags: ["macOS", "自动化", "桌面"]
+            },
+            {
+                name: "mcp-builder",
+                desc: "创建高质量 MCP 服务器，整合外部 API 或服务",
+                tags: ["MCP", "服务器", "API"]
+            },
+            {
+                name: "movie-mv-creator",
+                desc: "通过智能匹配电影场景和歌词创建音乐视频",
+                tags: ["视频", "MV", "电影"]
+            },
+            {
+                name: "nano-banana-pro",
+                desc: "使用 Google Nano Banana Pro (Gemini 3 Pro Image) API 生成和编辑图像",
+                tags: ["图像", "Gemini", "Google"]
+            },
+            {
+                name: "openclaw-feishu-webhook",
+                desc: "为阿里云轻量服务器配置飞书 Webhook 通信",
+                tags: ["OpenClaw", "飞书", "阿里云"]
+            },
+            {
+                name: "pdf",
+                desc: "全面的 PDF 工具包，提取文本和表格，创建、合并、拆分、处理表单",
+                tags: ["PDF", "文档", "处理"]
+            },
+            {
+                name: "pptx",
+                desc: "演示文稿创建、编辑和分析",
+                tags: ["PPT", "演示", "Office"]
+            },
+            {
+                name: "skill-creator",
+                desc: "创建有效 skills 的指南，扩展 Claude 能力",
+                tags: ["Skill", "创建", "开发"]
+            },
+            {
+                name: "slack-gif-creator",
+                desc: "创建优化 Slack 的动画 GIF，提供约束和动画概念",
+                tags: ["GIF", "Slack", "动画"]
+            },
+            {
+                name: "theme-factory",
+                desc: "为幻灯片、文档、报告、HTML 页面等穿件物设置主题",
+                tags: ["主题", "样式", "设计"]
+            },
+            {
+                name: "ui-ux-pro-max",
+                desc: "UI/UX 设计智能，50 种样式、21 种调色板、50 种字体组合",
+                tags: ["UI", "UX", "设计"]
+            },
+            {
+                name: "web-artifacts-builder",
+                desc: "创建复杂多组件 HTML artifacts 的工具套件",
+                tags: ["HTML", "React", "组件"]
+            },
+            {
+                name: "webapp-testing",
+                desc: "使用 Playwright 与本地 Web 应用交互和测试",
+                tags: ["测试", "Playwright", "Web"]
+            },
+            {
+                name: "xlsx",
+                desc: "全面的电子表格创建、编辑和分析，支持公式、格式化、数据可视化",
+                tags: ["Excel", "表格", "Office"]
+            }
+        ];
+
+        function renderSkills(filter = '') {
+            const grid = document.getElementById('skillsGrid');
+            const stats = document.getElementById('stats');
+
+            const filtered = skills.filter(skill => {
+                if (!filter) return true;
+                const searchLower = filter.toLowerCase();
+                return skill.name.toLowerCase().includes(searchLower) ||
+                       skill.desc.toLowerCase().includes(searchLower) ||
+                       skill.tags.some(tag => tag.toLowerCase().includes(searchLower));
+            });
+
+            stats.textContent = `共 ${filtered.length} 个 skills`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="no-results">没有找到匹配的 skills</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map((skill, index) => `
+                <div class="skill-card" style="animation-delay: ${index * 0.05}s">
+                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-desc">${skill.desc}</div>
+                    <div class="skill-meta">
+                        ${skill.tags.map(tag => `<span class="skill-tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 初始化
+        renderSkills();
+
+        // 搜索功能
+        let debounceTimer;
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                renderSkills(e.target.value);
+            }, 200);
+        });
+    </script>
+</body>
+</html>
