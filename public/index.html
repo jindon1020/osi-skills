@@ -83,6 +83,11 @@
         .message-text { line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
         .message-text img { max-width: 100%; border-radius: 8px; margin: 0.5rem 0; }
         .message-text video { max-width: 100%; border-radius: 8px; margin: 0.5rem 0; }
+        .message-media { margin: 0.5rem 0; }
+        .message-media img { max-width: 100%; max-height: 300px; border-radius: 8px; cursor: pointer; }
+        .message-media video { max-width: 100%; max-height: 400px; border-radius: 8px; }
+        .message-media a { color: var(--accent); text-decoration: none; }
+        .message-media a:hover { text-decoration: underline; }
         .message-text code { background: var(--bg-tertiary); padding: 0.125rem 0.375rem; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
         .message-text pre { background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 0.75rem 0; }
         .typing-indicator { display: flex; gap: 0.5rem; padding: 1rem; }
@@ -327,13 +332,17 @@
             const preview = document.getElementById('filePreview');
             if (files.length === 0) { preview.style.display = 'none'; return; }
             preview.style.display = 'flex';
-            preview.innerHTML = files.map((f, i) => `
-                <div class="file-item">
-                    ${f.thumbnail ? `<img src="${f.thumbnail}">` : ''}
-                    <span>${f.name}</span>
-                    <span class="file-remove" onclick="removeFile(${i})">×</span>
-                </div>
-            `).join('');
+            preview.innerHTML = files.map((f, i) => {
+                let icon = '';
+                if (f.type && f.type.startsWith('image/')) {
+                    icon = f.thumbnail ? `<img src="${f.thumbnail}">` : '🖼️';
+                } else if (f.type && f.type.startsWith('video/')) {
+                    icon = f.thumbnail ? `<video src="${f.thumbnail}" muted></video>` : '🎬';
+                } else {
+                    icon = '📄';
+                }
+                return `<div class="file-item">${icon}<span>${f.name}</span><span class="file-remove" onclick="removeFile(${i})">×</span></div>`;
+            }).join('');
         }
 
         function removeFile(index) { files.splice(index, 1); updateFilePreview(); }
@@ -379,9 +388,15 @@
             let mediaHtml = '';
             if (files && files.length > 0) {
                 mediaHtml = files.map(f => {
-                    if (f.type.startsWith('image/')) return `<img src="${f.url}" alt="${f.name}">`;
-                    if (f.type.startsWith('video/')) return `<video src="${f.url}" controls></video>`;
-                    return `<a href="${f.url}" target="_blank">📄 ${f.name}</a>`;
+                    const url = f.url || f.path || '';
+                    if (!url) return '';
+                    if (f.type && f.type.startsWith('image/')) {
+                        return `<div class="message-media"><img src="${url}" alt="${f.name || 'image'}" onclick="window.open('${url}', '_blank')"></div>`;
+                    }
+                    if (f.type && f.type.startsWith('video/')) {
+                        return `<div class="message-media"><video src="${url}" controls preload="metadata"></video></div>`;
+                    }
+                    return `<div class="message-media"><a href="${url}" target="_blank">📄 ${f.name || 'file'}</a></div>`;
                 }).join('');
             }
 
@@ -394,7 +409,7 @@
                         <span class="message-role">${role === 'user' ? '你' : 'Claude'}</span>
                         <span class="message-time">${time}</span>
                     </div>
-                    ${mediaHtml ? `<div class="message-text">${mediaHtml}</div>` : ''}
+                    ${mediaHtml ? mediaHtml : ''}
                     <div class="message-text">${formatContent(content)}</div>
                 </div>`;
             container.appendChild(messageDiv);
@@ -432,7 +447,7 @@
             isStreaming = true;
             updateUI();
 
-            addMessage('user', message, files.map(f => ({ name: f.name, type: f.type, url: f.thumbnail || '', thumbnail: f.thumbnail })));
+            addMessage('user', message, files.map(f => ({ name: f.name, type: f.type, url: f.path || '', path: f.path })));
             input.value = ''; input.style.height = 'auto';
             showTyping();
 
