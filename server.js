@@ -56,7 +56,7 @@ app.post('/api/chat', upload.array('files'), async (req, res) => {
     session.history.push({ role: 'user', content: message });
 
     // 构建 Claude Code 命令
-    const args = ['--print', '-p', message];
+    const args = ['--dangerously-skip-permissions', '--print', '-p', message];
 
     // 如果有附件，添加到上下文中
     if (files && files.length > 0) {
