@@ -36,8 +36,21 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 100 * 1024 * 1024 } // 100MB
+  limits: { fileSize: 200 * 1024 * 1024 } // 200MB
 });
+
+// Multer 错误处理
+const handleMulterError = (err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    res.status(400).json({ error: '文件太大，最大支持 200MB' });
+  } else if (err.code === 'LIMIT_FILE_COUNT') {
+    res.status(400).json({ error: '文件数量太多' });
+  } else if (err) {
+    res.status(400).json({ error: err.message });
+  } else {
+    next();
+  }
+};
 
 // 会话存储
 const sessions = new Map();
@@ -48,8 +61,8 @@ app.get('/', (req, res) => {
 });
 
 // 上传文件 API
-app.post('/api/upload', upload.array('files'), (req, res) => {
-  const sessionId = req.body.sessionId;
+app.post('/api/upload', upload.array('files'), handleMulterError, (req, res) => {
+  const sessionId = req.body.sessionId || 'default';
   const files = req.files.map(f => ({
     name: f.originalname,
     path: '/projects/' + sessionId + '/uploads/' + f.filename,
@@ -62,7 +75,7 @@ app.post('/api/upload', upload.array('files'), (req, res) => {
 });
 
 // 流式对话 API
-app.post('/api/chat', upload.array('files'), async (req, res) => {
+app.post('/api/chat', upload.array('files'), handleMulterError, async (req, res) => {
   const { message, sessionId } = req.body;
   const uploadedFiles = req.files || [];
 
@@ -169,12 +182,6 @@ app.post('/api/chat', upload.array('files'), async (req, res) => {
     session.history.push(assistantMsg);
     saveConversation(session, chatLogPath);
 
-    // 检查是否有生成的文件需要保存
-    const outputFiles = checkForOutputFiles(output, outputsDir);
-    outputFiles.forEach(file => {
-      res.write(`data: ${JSON.stringify({ type: 'file', file })}\n\n`);
-    });
-
     // 发送结束
     const sessionName = `会话 ${sessionId.substr(0, 8)}`;
     res.write(`data: ${JSON.stringify({ type: 'end', content: output, sessionName })}\n\n`);
@@ -207,14 +214,6 @@ function saveConversation(session, chatLogPath) {
   fs.writeFileSync(chatLogPath, md, 'utf8');
 }
 
-// 检查输出中是否有文件需要保存
-function checkForOutputFiles(output, outputsDir) {
-  const files = [];
-  // 简化处理：检查是否有文件路径提及
-  // 实际实现中可以解析 AI 输出中的文件信息
-  return files;
-}
-
 // 获取会话历史
 app.get('/api/sessions/:sessionId', (req, res) => {
   const { sessionId } = req.params;
@@ -222,7 +221,6 @@ app.get('/api/sessions/:sessionId', (req, res) => {
   if (session) {
     res.json({ history: session.history, sessionName: `会话 ${sessionId.substr(0, 8)}` });
   } else {
-    // 尝试从文件加载
     const chatLogPath = path.join(PROJECTS_DIR, sessionId, 'conversation.md');
     if (fs.existsSync(chatLogPath)) {
       res.json({ history: [], sessionName: `会话 ${sessionId.substr(0, 8)}`, loadedFromFile: true });
