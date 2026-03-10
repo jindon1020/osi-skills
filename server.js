@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { spawn } = require('child_process');
+const { execSync, exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
@@ -17,7 +17,7 @@ app.use(express.static('public'));
 // 文件上传配置
 const upload = multer({
   dest: 'uploads/',
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 // 确保上传目录存在
@@ -35,7 +35,7 @@ app.get('/', (req, res) => {
 
 // 流式对话 API
 app.post('/api/chat', upload.array('files'), async (req, res) => {
-  const { message, sessionId, confirm } = req.body;
+  const { message, sessionId } = req.body;
   const files = req.files || [];
 
   // 设置 SSE 头
@@ -55,100 +55,90 @@ app.post('/api/chat', upload.array('files'), async (req, res) => {
     // 添加用户消息到历史
     session.history.push({ role: 'user', content: message });
 
-    // 构建 Claude Code 命令
-    const args = ['--dangerously-skip-permissions', '--print', '-p', message];
+    // 构建消息内容
+    let fullMessage = message;
 
     // 如果有附件，添加到上下文中
     if (files && files.length > 0) {
       const fileDescriptions = files.map(f => `[上传文件: ${f.originalname}]`).join(' ');
-      args[2] = `${fileDescriptions}\n\n${message}`;
+      fullMessage = `${fileDescriptions}\n\n${message}`;
     }
 
-    // 添加历史上下文（最近的5轮对话）
+    // 添加历史上下文
     if (session.history.length > 1) {
       const recentHistory = session.history.slice(-10, -1);
       const context = recentHistory.map(h => `${h.role === 'user' ? '用户' : '助手'}: ${h.content}`).join('\n\n');
-      args[2] = `对话历史:\n${context}\n\n---\n\n当前问题: ${args[2]}`;
+      fullMessage = `对话历史:\n${context}\n\n---\n\n当前问题: ${fullMessage}`;
     }
 
     // 发送开始信号
     res.write(`data: ${JSON.stringify({ type: 'start' })}\n\n`);
 
-    // 调用 Claude Code
-    const claude = spawn('claude', args, {
-      env: {
-        ...process.env,
-        ANTHROPIC_AUTH_TOKEN: process.env.ANTHROPIC_AUTH_TOKEN || 'sk-cp-MWmY5LHRY9viQ_ShLvpRaIm5EU56NntUFM5f-HigNQ2-WSqAz0krDgEhUzhMIf2XCjQwyUWfFHchNfGRi0JoHqnTtjQ2yt9XHYTsUhYy9fCkDrZb-_DhgPo',
-        ANTHROPIC_BASE_URL: process.env.ANTHROPIC_BASE_URL || 'https://api.minimaxi.com/anthropic',
-        ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || 'MiniMax-M2.5',
-        API_TIMEOUT_MS: '300000'
-      }
-    });
+    // 构建环境变量
+    const env = {
+      ...process.env,
+      ANTHROPIC_AUTH_TOKEN: 'sk-cp-MWmY5LHRY9viQ_ShLvpRaIm5EU56NntUFM5f-HigNQ2-WSqAz0krDgEhUzhMIf2XCjQwyUWfFHchNfGRi0JoHqnTtjQ2yt9XHYTsUhYy9fCkDrZb-_DhgPo',
+      ANTHROPIC_BASE_URL: 'https://api.minimaxi.com/anthropic',
+      ANTHROPIC_MODEL: 'MiniMax-M2.5',
+      API_TIMEOUT_MS: '300000'
+    };
 
-    let fullResponse = '';
+    // 使用 execSync 同步执行
+    const escapedMessage = fullMessage.replace(/'/g, "'\\''");
+    const command = `claude --print -p '${escapedMessage}'`;
 
-    claude.stdout.on('data', (data) => {
-      const text = data.toString();
-      fullResponse += text;
-      res.write(`data: ${JSON.stringify({ type: 'content', content: text })}\n\n`);
-    });
+    console.log('Executing:', command);
 
-    claude.stderr.on('data', (data) => {
-      // 忽略警告信息
-      const text = data.toString();
-      if (!text.includes('WARNING') && !text.includes('warn')) {
-        console.error('Claude Error:', text);
-      }
-    });
+    let output = '';
+    try {
+      output = execSync(command, {
+        env: env,
+        encoding: 'utf8',
+        timeout: 120000,
+        maxBuffer: 10 * 1024 * 1024
+      });
+    } catch (execError) {
+      console.error('Exec error:', execError.message);
+      output = execError.stdout || execError.message;
+    }
 
-    claude.on('close', (code) => {
-      // 添加助手回复到历史
-      if (fullResponse) {
-        session.history.push({ role: 'assistant', content: fullResponse });
-      }
+    // 发送内容
+    res.write(`data: ${JSON.stringify({ type: 'content', content: output })}\n\n`);
 
-      // 限制历史长度
+    // 添加到历史
+    if (output) {
+      session.history.push({ role: 'assistant', content: output });
       if (session.history.length > 20) {
         session.history = session.history.slice(-20);
       }
+    }
 
-      res.write(`data: ${JSON.stringify({ type: 'end', content: fullResponse })}\n\n`);
-      res.end();
+    // 发送结束
+    res.write(`data: ${JSON.stringify({ type: 'end', content: output })}\n\n`);
+    res.end();
 
-      // 清理上传的文件
-      files.forEach(f => {
-        try {
-          fs.unlinkSync(f.path);
-        } catch (e) {}
-      });
-    });
-
-    claude.on('error', (err) => {
-      res.write(`data: ${JSON.stringify({ type: 'error', error: err.message })}\n\n`);
-      res.end();
-    });
-
-    // 处理客户端断开连接
-    req.on('close', () => {
-      claude.kill();
+    // 清理上传的文件
+    files.forEach(f => {
+      try {
+        fs.unlinkSync(f.path);
+      } catch (e) {}
     });
 
   } catch (error) {
+    console.error('Error:', error);
     res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
     res.end();
   }
 });
 
-// 确认执行 API（用于需要用户确认的操作）
+// 确认执行 API
 app.post('/api/confirm', (req, res) => {
   const { sessionId, confirmed } = req.body;
-
   const session = sessions.get(sessionId);
   if (session) {
     session.confirmed = confirmed;
     session.waitingForConfirm = false;
   }
-
   res.json({ success: true });
 });
 
@@ -156,7 +146,6 @@ app.post('/api/confirm', (req, res) => {
 app.get('/api/sessions/:sessionId', (req, res) => {
   const { sessionId } = req.params;
   const session = sessions.get(sessionId);
-
   if (session) {
     res.json({ history: session.history });
   } else {
