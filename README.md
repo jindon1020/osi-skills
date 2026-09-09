@@ -1,6 +1,27 @@
 # OSI Skills
 
-我自定义创建的 Claude Code Agent Skills 集合。
+我自定义创建的跨 Agent Skills 集合，支持 Claude Code、Codex 和通用 Agent Skill 目录。
+
+## 通过仓库链接安装到 Codex 与 Agent 目录
+
+以下命令会将仓库克隆到 `~/.local/share/osi-skills/repo`，然后把同一份 Skill 以符号链接安装到：
+
+- `~/.codex/skills/`（Codex）
+- `~/.agent/skills/`（`.agent` 兼容目录）
+- `~/.agents/skills/`（通用 Agent Skills 目录）
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jindon1020/osi-skills/main/install-linked-skill.sh \
+  | sh -s -- translate-agentos-workflow-package
+```
+
+安装器不会覆盖已有的真实目录或指向其他位置的符号链接。也可以使用 skills.sh CLI 从 GitHub 链接全局安装到 Codex：
+
+```bash
+npx skills add https://github.com/jindon1020/osi-skills \
+  --skill translate-agentos-workflow-package \
+  --agent codex --global --yes
+```
 
 ## 一键安装所有 Skills
 
@@ -38,6 +59,7 @@ curl -sL https://raw.githubusercontent.com/jindon1020/osi-skills/main/install-si
 | skill-creator | Skill 创建指南 |
 | slack-gif-creator | Slack GIF 创作 |
 | theme-factory | 主题工厂 |
+| translate-agentos-workflow-package | 将业务 Skill 翻译为 AgentOS Workflow Package |
 | ui-ux-pro-max | UI/UX 设计专家 |
 | web-artifacts-builder | Web 组件构建器 |
 | webapp-testing | Web 应用测试 |
@@ -63,7 +85,7 @@ git push
 
 ## 本地 Skills 目录
 
-本地 skills 存放在 `~/.claude/skills/` 目录下。
+本地 skills 可存放在 `~/.claude/skills/`、`~/.codex/skills/`、`~/.agent/skills/` 或 `~/.agents/skills/` 目录下。
 
 同步脚本会自动排除以下类型的文件：
 - 符号链接（来自其他位置的 skills）

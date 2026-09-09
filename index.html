@@ -308,6 +308,7 @@
             { name: "skill-creator", desc: "创建有效 skills 的指南，扩展 Claude 能力", tags: ["Skill", "创建", "开发"] },
             { name: "slack-gif-creator", desc: "创建优化 Slack 的动画 GIF，提供约束和动画概念", tags: ["GIF", "Slack", "动画"] },
             { name: "theme-factory", desc: "为幻灯片、文档、报告、HTML 页面等设置主题", tags: ["主题", "样式", "设计"] },
+            { name: "translate-agentos-workflow-package", desc: "将业务 Skill、Prompt 与工具编排翻译为可审查的 AgentOS Workflow Package", tags: ["AgentOS", "Workflow", "Skill"], install: `curl -fsSL ${BASE_URL}/install-linked-skill.sh | sh -s -- translate-agentos-workflow-package` },
             { name: "ui-ux-pro-max", desc: "UI/UX 设计智能，50 种样式、21 种调色板、50 种字体组合", tags: ["UI", "UX", "设计"] },
             { name: "web-artifacts-builder", desc: "创建复杂多组件 HTML artifacts 的工具套件", tags: ["HTML", "React", "组件"] },
             { name: "webapp-testing", desc: "使用 Playwright 与本地 Web 应用交互和测试", tags: ["测试", "Playwright", "Web"] },
@@ -378,7 +379,7 @@
             }
 
             grid.innerHTML = filtered.map((skill, index) => {
-                const installCmd = SINGLE_INSTALL_CMD + ' ' + skill.name;
+                const installCmd = skill.install || (SINGLE_INSTALL_CMD + ' ' + skill.name);
                 return `
                 <div class="skill-card" style="animation-delay: ${index * 0.05}s">
                     <div class="skill-header">

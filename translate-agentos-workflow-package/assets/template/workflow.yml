@@ -1,0 +1,125 @@
+spec: agentos.workflow/v3
+workflow:
+  id: replace-with-workflow-key
+  version: 1.0.0
+  entry: input
+  nodes:
+    input:
+      type: input@1
+      interface:
+        inputs: {}
+        outputs:
+          request_text: {schema: {type: string}}
+        routes: []
+      config: {}
+    prepare_state:
+      type: code@2
+      interface:
+        inputs:
+          request_text:
+            schema: {type: string}
+            source: {kind: node, selector: [input, request_text]}
+        outputs:
+          state: {schema: &state_schema {type: object}}
+        routes: []
+      config: {path: resources/scripts/prepare_state.py}
+      policy: {timeout_seconds: 30, attempts: 1}
+    json_guard:
+      type: loop@1
+      interface:
+        inputs:
+          initial_state:
+            schema: *state_schema
+            source: {kind: node, selector: [prepare_state, state]}
+        outputs:
+          final_state: {schema: *state_schema}
+        routes: []
+      config:
+        ref: generate-and-validate
+        shared_input: null
+        max_iterations: 3
+      policy: {timeout_seconds: 900, attempts: 1}
+    output:
+      type: output@1
+      interface:
+        inputs:
+          final_state:
+            schema: *state_schema
+            source: {kind: node, selector: [json_guard, final_state]}
+        outputs:
+          final_state: {schema: *state_schema}
+        routes: []
+      config: {}
+  edges:
+    - {from: input, to: prepare_state}
+    - {from: prepare_state, to: json_guard}
+    - {from: json_guard, to: output}
+  subworkflows:
+    generate-and-validate:
+      entry: input
+      nodes:
+        input:
+          type: input@1
+          interface:
+            inputs: {}
+            outputs:
+              state: {schema: *state_schema}
+              iteration: {schema: {type: integer, minimum: 1, maximum: 3}}
+            routes: []
+          config: {}
+        generate:
+          type: llm@1
+          interface:
+            inputs:
+              state:
+                schema: *state_schema
+                source: {kind: node, selector: [input, state]}
+              iteration:
+                schema: {type: integer, minimum: 1, maximum: 3}
+                source: {kind: node, selector: [input, iteration]}
+            outputs:
+              raw_json: {schema: {type: string}}
+            routes: []
+          config:
+            prompt: resources/references/generate-json.md
+            user_prompt: "Attempt {{ input.iteration }} input: {{ input.state }}"
+            mode: text
+          policy: {timeout_seconds: 300, attempts: 1}
+        validate_json:
+          type: code@2
+          interface:
+            inputs:
+              state:
+                schema: *state_schema
+                source: {kind: node, selector: [input, state]}
+              iteration:
+                schema: {type: integer, minimum: 1, maximum: 3}
+                source: {kind: node, selector: [input, iteration]}
+              raw_json:
+                schema: {type: string}
+                source: {kind: node, selector: [generate, raw_json]}
+            outputs:
+              state: {schema: *state_schema}
+              decision: {schema: {type: string, enum: [continue, done]}}
+            routes: []
+          config: {path: resources/scripts/validate_json.py}
+          policy: {timeout_seconds: 30, attempts: 1}
+        output:
+          type: output@1
+          interface:
+            inputs:
+              state:
+                schema: *state_schema
+                source: {kind: node, selector: [validate_json, state]}
+              decision:
+                schema: {type: string, enum: [continue, done]}
+                source: {kind: node, selector: [validate_json, decision]}
+            outputs:
+              state: {schema: *state_schema}
+              decision: {schema: {type: string, enum: [continue, done]}}
+            routes: []
+          config: {}
+      edges:
+        - {from: input, to: generate}
+        - {from: generate, to: validate_json}
+        - {from: validate_json, to: output}

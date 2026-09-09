@@ -1,0 +1,4 @@
+interface:
+  display_name: "AgentOS Workflow Package 翻译"
+  short_description: "构建可由 WPM 发布并真实运行的 AgentOS v3 工作流包"
+  default_prompt: "使用 $translate-agentos-workflow-package 将这个业务 Skill 拆分为合适节点，构建 AgentOS v3 Workflow Package，并按授权完成 Runtime 接纳、WPM 身份核验和真实 Run 验证。"
